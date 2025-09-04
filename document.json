@@ -1,0 +1,141 @@
+{
+  "id": "20250903_andriamboahangy_andy_ny_hasina",
+  "personal_info": {
+    "full_name": "ANDRIAMBOAHANGY ANDY NY HASINA",
+    "date_of_birth": "2000-12-05",
+    "nationality": "Malgache",
+    "marital_status": "Célibataire",
+    "contact": {
+      "email": "andynyhasina1@gmail.com",
+      "phone": "034 74 699 65",
+      "address": "IIG 104 CHT AMBATOMARO"
+    },
+    "social_media": {
+      "twitter": "@AndyNyHasina",
+      "facebook": "f @AndyRak",
+      "instagram": "@rak.andy"
+    }
+  },
+  "professional_summary": {
+    "title": "Développeur Full-stack spécialisé en Intelligence Artificielle",
+    "summary": "Développeur passionné, spécialisé en applications web et mobiles, motivé par les défis techniques et déterminé à apporter des solutions innovantes au sein d'une équipe dynamique."
+  },
+  "work_experience": [
+    {
+      "title": "développeur IA (intelligence artificielle)",
+      "company": "Nuklear",
+      "location": "Antananarivo, AG, Madagascar",
+      "start_date": "2025-03",
+      "end_date": "present",
+      "description": "j'ai piloté le développement et le déploiement de systèmes intelligents et de bots, conçu, entraîné et optimisé des modèles de machine learning et deep learning pour diverses applications, et intégré ces modèles dans des solutions opérationnelles en assurant leur performance, fiabilité, scalabilité et maintenance."
+    },
+    {
+      "title": "Développement Web",
+      "company": "Nuklear",
+      "location": "Antananarivo, AG, Madagascar",
+      "start_date": "2025-03",
+      "end_date": "present",
+      "description": "J'ai conçu et développé des systèmes permettant de traiter et gérer automatiquement des données complexes, en assurant la précision et la fiabilité des calculs. J'ai intégré des fonctions de traitement, de formatage et d'organisation des informations pour fournir des résultats cohérents et exploitables par les utilisateurs, tout en maintenant la performance et la scalabilité des solutions"
+    },
+    {
+      "title": "BI/Data Integration Engineer",
+      "company": "caisse d'épargne Madagascar",
+      "location": "Antananarivo, AG, Madagascar",
+      "start_date": "2022",
+      "end_date": "2023",
+      "description": "Conception et automatisation d'un pipeline ETL de bout en bout pour l'extraction, la transformation et le chargement des données de SQL vers PostgreSQL, assurant la fiabilité et la mise à jour continue."
+    }
+  ],
+  "education": [
+    {
+      "degree": "Master 2 en Informatique de Gestion, Génie Logiciel et Intelligence Artificielle",
+      "status": "en cours",
+      "institution": "Institut Supérieur Polytechnique de Madagascar",
+      "location": "Antananarivo",
+      "start_date": "2023",
+      "end_date": "present"
+    },
+    {
+      "degree": "Licence en Informatique de Gestion, Génie Logiciel et Intelligence Artificielle",
+      "status": "completed",
+      "institution": "Institut Supérieur Polytechnique de Madagascar",
+      "location": "Antananarivo",
+      "start_date": "2021",
+      "end_date": "2022"
+    }
+  ],
+  "skills": {
+    "programming_languages": ["Python", "Javascript", "Dart" , "java"],
+    "web_technologies": ["HTML", "CSS", "NodeJS", "ReactJS", "Next", "Flask" , "tailwind"],
+    "mobile_technologies": ["Flutter"],
+    "ai_ml_libraries": ["OpenCV", "TensorFlow", "Scikit-learn", "pytorch"],
+    "python_specific": ["Web Scraping", "Flask"],
+    "databases": ["PostgreSQL", "MySQL", "MongoDB", "Firebase", "Oracle"],
+    "version_control": ["Git"]
+  },
+  "projects": [
+    {
+      "name": "Application agence de voyage",
+      "year": "2024",
+      "institution": "ISPM Antananarivo",
+      "description": "Un logiciel de gestion de voyages intégrant Flask, Flutter, React et un modèle de classification KNN pour la recommandation",
+      "technologies": ["Flask", "Flutter", "React", "KNN"]
+    },
+    {
+      "name": "MEDOC",
+      "year": "2023",
+      "institution": "ISPM Antsobolo",
+      "description": "Une application Flutter permettant de rechercher des médicaments et de gérer les pharmacies, avec Node.js et MongoDB.",
+      "technologies": ["Flutter", "Node.js", "MongoDB"]
+    },
+    {
+      "name": "Automatisation du processus ETL",
+      "year": "2022",
+      "institution": "Caisse d'épargne Antananarivo",
+      "description": "Lors de mon stage, j'ai développé un processus ETL (extraction, transformation et chargement) pour migrer des données d'Oracle vers PostgreSQL en utilisant Python.",
+      "technologies": ["Python", "Oracle", "PostgreSQL", "ETL"]
+    },
+    {
+      "name": "BOTGUARD",
+      "year": "2021",
+      "description": "Un logiciel de surveillance utilisant WebRTC, Flask, Flutter, React et un autoencodeur pour la détection des personnes non identifiées.",
+      "technologies": ["WebRTC", "Flask", "Flutter", "React", "Autoencoder"]
+    },
+    {
+      "name": "Holla",
+      "year": "2020",
+      "institution": "ISPM Antsobolo",
+      "description": "Une application mobile de gestion de personnel utilisant Firebase, SQLite et Flutter.",
+      "technologies": ["Firebase", "SQLite", "Flutter"]
+    },
+    {
+      "name": "Salamah",
+      "year": "2020",
+      "institution": "ISPM Antsobolo",
+      "description": "Une application mobile en temps réel facilitant les interactions entre patients et médecins, utilisant Flutter, React et Node.js.",
+      "technologies": ["Flutter", "React", "Node.js"]
+    },
+    {
+      "name": "E-sakafo",
+      "year": "2019",
+      "institution": "ISPM Antsobolo",
+      "description": "Une application de gestion de restaurant utilisant React pour le frontend et Node.js pour le backend.",
+      "technologies": ["React", "Node.js"]
+    }
+  ],
+  "strengths": [
+    "L'esprit d'équipe",
+    "L'adaptabilité",
+    "Le rigueur",
+    "La passion"
+  ],
+  "languages": [
+    { "language": "Malgache", "proficiency": "Native" },
+    { "language": "Français", "proficiency": "Not specified" },
+    { "language": "Anglais", "proficiency": "Not specified" }
+  ],
+  "interests": [
+    "la musique",
+    "Le sport"
+  ]
+}

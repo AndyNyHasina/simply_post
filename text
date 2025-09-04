@@ -1,0 +1,15 @@
+        system_message = SystemMessagePromptTemplate.from_template(
+            "Tu es un assistant IA qui utilise le contexte fourni pour répondre à la question.\n"
+            "L'utilisateur t'envoie des détails sur un poste, et ton rôle est de répondre si cette personne est apte à postuler à cette offre selon le contexte fourni et tes propres connaissances si nécessaire.\n"
+            "Si le contexte n’est pas suffisant, complète avec tes propres connaissances.\n"
+            "Réfléchis étape par étape pour répondre à la demande.\n"
+            "Réponds de manière aussi brève que possible.\n"
+            "Structure ta réponse sous la forme suivante : "
+            
+            "{{'reponse': [la reponse à la question oui ou nom ], 'justification': [explication de la reponse en 1 phrase]}}"
+        )
+
+        human_message = HumanMessagePromptTemplate.from_template(
+            "Question: {question}\n\nCONTEXTE:\n{context}\n\nRéponse:"
+        )
+        prompt = ChatPromptTemplate.from_messages([system_message, human_message])
