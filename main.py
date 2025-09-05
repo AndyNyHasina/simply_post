@@ -10,7 +10,13 @@ parent_dir = os.path.dirname(__file__)
 dotenv.load_dotenv(dotenv_path=os.path.join(parent_dir, ".env"))
 
 
-#asyncio.run(Navigater().run())
+asyncio.run(Navigater(
+    username= os.getenv("USERNAME"),
+    psw= os.getenv("PASSWORD")
+    
+    
+    
+    ).run())
 
 
 def createRag():
@@ -36,6 +42,8 @@ def geminichat():
 def testRag():    
     path = r"C:\Users\Hasina_IA\Documents\andy\andy\document.json"
     db = Database2(path , prompt_type="generation")
+    #db = Database2(path )
+    
     # 1️⃣ Charger et découper les documents
     #db.load_data()
     print("📄 Documents chargés et découpés.")
@@ -66,4 +74,4 @@ Missions
     
     print("\n💬 Question :", question)
     print("✅ Réponse :", answer)
-testRag()
+#testRag()

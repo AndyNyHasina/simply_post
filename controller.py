@@ -14,6 +14,10 @@ from playwright.async_api import async_playwright
 
 import os
 
+from Model.GraphState import GraphState
+
+from graph import Graph
+
 
 
 class GPT_ask:
@@ -149,8 +153,8 @@ L'utilisateur t'envoie des détails sur un poste, et ton rôle est de répondre 
 Si le contexte n’est pas suffisant, complète avec tes propres connaissances.
 Réfléchis étape par étape pour répondre à la demande.
 Réponds de manière aussi brève que possible.
-Structure ta réponse sous la forme suivante :
-{{'reponse': [la réponse à la question oui ou non], 'justification': [explication de la réponse en 1 phrase]}}
+Structure ta réponse directement sous la forme suivante sans ajoute le mot json  :
+{{"reponse": [la réponse à la question 1 pour  oui ou 0 pour non], "justification": [explication de la réponse en 1 phrase]}}
 """,
 "generation": """
 Tu es un assistant IA chargé de générer une lettre de motivation pour un poste donné.
@@ -159,8 +163,9 @@ L'utilisateur t'envoie les détails du poste et un contexte (CV, expérience, fo
 Ton rôle est de **réutiliser exclusivement les informations présentes dans le contexte** pour enrichir la lettre. 
 Ne complète pas avec tes propres connaissances. 
 Réfléchis étape par étape et écris une lettre cohérente.
-Structure la réponse sous la forme suivante :
-{{'reponse': [lettre de motivation complète basée sur le contexte fourni]}}
+Structure ta réponse directement sous la forme suivante sans ajoute le mot json  :
+
+{{"reponse": [lettre de motivation complète basée sur le contexte fourni]}}
 """
 
 
@@ -321,82 +326,151 @@ Réponse:""",
         print("✅ Configuration réinitialisée")
         self._setup_chain()
         
-        
-        
+    import os
+from playwright.async_api import async_playwright
+
+# Assure-toi que Database2 et Graph sont correctement importés avant
+
 class Navigater:
-    def __init__(self):
+    def __init__(self, username, psw):
         self.url = "https://www.portaljob-madagascar.com/emploi/liste/secteur/informatique-web"
         self.page = None
+        self.username = username
+        self.psw = psw
         self.setup()
-
-            
-            
+        self.retour = ""
 
     async def run(self):
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)
+            # Session persistante
+            browser = await p.chromium.launch_persistent_context(
+                user_data_dir="data",
+                headless=False
+            )
 
-            # Nouveau contexte
-            context = await browser.new_context()
-            self.page = await context.new_page()
+            # Nouvelle page
+            self.page = await browser.new_page()
             await self.page.goto(self.url, timeout=0)
+            await self.page.wait_for_load_state('networkidle')
 
             await self.itemselection()
 
-            input("data")  # pause
             await browser.close()
-            
+
     async def itemselection(self):
         selector = "article.item_annonce"
-        await self.page.wait_for_selector(selector)
-        
-        all_item = self.page.locator(selector)
-        length = await all_item.count()
-
-        for i in range(length):
-            element = all_item.nth(i)
-            await element.click()   
-            detail_contenu = await self.getDetailPost()  
-            if detail_contenu : 
-                ##alefa any le ia 
-                print(detail_contenu)
-                self.db.ask(detail_contenu)
-                print("test")
-            break  
-        
-    async def getDetailPost(self): 
-        try :
-            selector_temp = "article[class='item_detail']"
-            selector2_temp = "aside[class='item_detail']"
-            # ✅ attendre que le bloc détail soit visible
-            try : 
-                await self.page.wait_for_selector(selector_temp , state="attached")
-                selector = selector_temp
-            except :
-                await self.page.wait_for_selector(selector2_temp , state="attached")
-                selector = selector2_temp
-                
-                
+        while True:
+            await self.page.wait_for_selector(selector)
+            all_item = self.page.locator(selector)
+            length = await all_item.count()
             
+            if length == 0:
+                break  # plus d'éléments
 
-            detail_element = self.page.locator(selector)
+            element = all_item.nth(0)  # toujours prendre le premier élément
+            await element.click()
+            await self.page.wait_for_load_state('networkidle')
+
+            detail_contenu = await self.getDetailPost()
+            if detail_contenu:
+                print(detail_contenu)
+                retour = self.graph(detail_post=detail_contenu)
+                data = retour.get("lm", "")
+
+                if data == "":
+                    print("hello")
+                    await self.post()
+                else:
+                    # Retour à la page précédente
+                    await self.page.go_back()
+                    await self.page.wait_for_load_state('networkidle')
+
+    async def getDetailPost(self):
+        try:
+            item_selector = ".item_detail"
+            await self.page.wait_for_selector(item_selector)
+            all_elements = self.page.locator(item_selector)
+
+            # Filtrer ceux qui contiennent l'image spécifique
+            mission_elements = all_elements.filter(
+                has=self.page.locator("p > img[src='https://www.portaljob-madagascar.com/application/resources/images/view/mission.jpg']")
+            )
+
+            detail_element = mission_elements.nth(0)
             detail_contenu = await detail_element.inner_text()
             print("🔎 Détails annonce :")
             return detail_contenu
-        except Exception as e :
+        except Exception as e:
             print(e)
+            return None
 
     def setup(self):
         self.path = r"C:\Users\Hasina_IA\Documents\andy\andy\document.json"
         self.vector_database = r"C:\Users\Hasina_IA\Documents\andy\andy\faiss_index"
-        self.db = Database2(self.path , prompt_type = "classification")
-        self.db1 = Database2(self.path , prompt_type = "generation")
-        
+        self.classification = Database2(self.path, prompt_type="classification")
+        self.generation = Database2(self.path, prompt_type="generation")
+
         if not os.path.exists(self.vector_database):
-            self.db.load_data()
-            self.db.create_embedding()
-        self.db1.load_index()
-        self.db.load_index()
-        self.db.create_rag()
-        self.db1.create_rag()
-        
+            self.classification.load_data()
+            self.classification.create_embedding()
+        self.classification.load_index()
+        self.generation.load_index()
+        self.generation.create_rag()
+        self.classification.create_rag()
+
+    def graph(self, detail_post):
+        state = GraphState(
+            post_info=detail_post,
+            lm='',
+            next=''
+        )
+        graph_instance = Graph(llm_classification_instance=self.classification,
+                               llm_generation_instance=self.generation)
+        app = graph_instance.getApp()
+        self.retour = app.invoke(state)
+        print(self.retour)
+        return self.retour
+
+    async def post(self):
+        try:
+            selector_element = "a[id='a2']"
+            selector = self.page.locator(selector_element)
+            await selector.nth(0).click()
+            await self.page.wait_for_load_state('networkidle')
+            await self.login()
+        except Exception as e:
+            print(e)
+
+    async def login(self):
+        try:
+            selectorusername = "input[id='log_username']"
+            selectorpwd = "input[id='log_password']"
+            submit = "a[id='link-log']"
+
+            user_element = self.page.locator(selectorusername)
+            pwd_element = self.page.locator(selectorpwd)
+            submit_element = self.page.locator(submit)
+
+            print(self.username)
+            print(self.psw)
+
+            await user_element.fill(self.username)
+            await pwd_element.fill(self.psw)
+
+            await submit_element.click()
+            await self.page.wait_for_load_state('networkidle')
+        except Exception as e:
+            print(e)
+
+    async def fill_lm(self):
+        try:
+            data = self.retour
+            selector = "textarea[id='lm']"
+            selector_element = self.page.locator(selector=selector)
+            await selector_element.nth(0).fill(data)
+
+            selector_bouton = "a[id='link-valid']"
+            selector_bouton = self.page.locator(selector_bouton)
+            # await selector_bouton.nth(0).click()
+        except Exception as e:
+            print(e)
