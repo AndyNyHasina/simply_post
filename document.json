@@ -49,11 +49,11 @@
   "education": [
     {
       "degree": "Master 2 en Informatique de Gestion, Génie Logiciel et Intelligence Artificielle",
-      "status": "en cours",
+      "status": "completed",
       "institution": "Institut Supérieur Polytechnique de Madagascar",
       "location": "Antananarivo",
       "start_date": "2023",
-      "end_date": "present"
+      "end_date": "2024"
     },
     {
       "degree": "Licence en Informatique de Gestion, Génie Logiciel et Intelligence Artificielle",

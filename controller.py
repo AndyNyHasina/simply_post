@@ -2,13 +2,19 @@
 import json
 import os
 from langchain_openai import  ChatOpenAI
-from langchain.vectorstores import FAISS
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+
+from langchain_classic.chains import RetrievalQA
+from langchain_community.embeddings.openai import OpenAIEmbeddings
 from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
 from langchain_core.output_parsers import JsonOutputParser , StrOutputParser
-from langchain.document_loaders import TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chains import RetrievalQA
+from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+
+
+
+   
 from playwright.async_api import async_playwright
 
 
@@ -132,19 +138,11 @@ class Database:
             return_source_documents=True
         )
 
-from langchain.document_loaders import TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain.chains import RetrievalQA
-from langchain_google_genai import ChatGoogleGenerativeAI
 
 import os
 from langchain_community.document_loaders import TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain.chains import RetrievalQA
+
+from langchain_google_genai import GoogleGenerativeAIEmbeddings , ChatGoogleGenerativeAI
 
 class Database2:
     PROMPTS = {
@@ -175,7 +173,7 @@ Structure ta réponse directement sous la forme suivante sans ajoute le mot json
         
 
     }
-    def __init__(self, path: str, prompt_type: str = "classification", chunk_size: int = 500, chunk_overlap: int = 50, faiss_index_path: str = "faiss_index"):
+    def __init__(self, path: str, prompt_type: str = "classification", chunk_size: int = 500, chunk_overlap: int = 50, faiss_index_path: str = "faiss_index" , ):
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
         if not self.google_api_key:
             raise ValueError("❌ GOOGLE_API_KEY non trouvée dans les variables d'environnement")
@@ -336,6 +334,7 @@ class Navigater:
         self.url = "https://www.portaljob-madagascar.com/emploi/liste/secteur/informatique-web"
         self.page = None
         self.username = username
+        self.list_page  = []
         self.psw = psw
         self.setup()
         self.retour = ""
@@ -343,19 +342,19 @@ class Navigater:
     async def run(self):
         async with async_playwright() as p:
             # Session persistante
-            browser = await p.chromium.launch_persistent_context(
+            self.browser = await p.chromium.launch_persistent_context(
                 user_data_dir="data",
                 headless=False
             )
 
             # Nouvelle page
-            self.page = await browser.new_page()
+            self.page = await self.browser.new_page()
             await self.page.goto(self.url, timeout=0)
             await self.page.wait_for_load_state('networkidle')
 
             await self.itemselection()
 
-            await browser.close()
+            await self.browser.close()
 
     async def itemselection(self):
         selector = "article.item_annonce"
@@ -367,33 +366,51 @@ class Navigater:
             if length == 0:
                 break  # plus d'éléments
 
-            element = all_item.nth(0)  # toujours prendre le premier élément
-            await element.click()
-            await self.page.wait_for_load_state('networkidle')
+            for index in range(length) :
+                element = all_item.nth(index=index)  # toujours prendre le premier élément
+                await element.scroll_into_view_if_needed()
+                link = await self.getElementClickable(selector="h3 a" , parent=element)
+                await link.scroll_into_view_if_needed()
+                href = await link.get_attribute("href")
+                new_page = await self.browser.new_page()
+                await new_page.goto(href , timeout=0 , wait_until="networkidle")
+                await new_page.wait_for_load_state('networkidle')
+                detail_contenu = await self.getDetailPost(page=new_page)
+                if detail_contenu:
+                    print(detail_contenu)
+                    #retour = self.graph(detail_post=detail_contenu)
+                    #data = retour.get("lm", "")
+                    data = ""
+                    if data == "":
+                        await self.post(page=new_page)
+                        await self.fill_lm(page=new_page)
 
-            detail_contenu = await self.getDetailPost()
-            if detail_contenu:
-                print(detail_contenu)
-                retour = self.graph(detail_post=detail_contenu)
-                data = retour.get("lm", "")
+                    else:
+                        # Retour à la page précédente
+                        await new_page.close()
 
-                if data == "":
-                    print("hello")
-                    await self.post()
-                else:
-                    # Retour à la page précédente
-                    await self.page.go_back()
-                    await self.page.wait_for_load_state('networkidle')
+    async def getElementClickable(self  , selector : str  , parent ) : 
+        try : 
+            self.page.wait_for_selector(selector=selector)
+            element = parent.locator(selector)
+            length = await element.count()
+            if element and length > 0 : 
+                return element.nth(0)
+            else : 
+                raise Exception("element introuvable")
+        except Exception as e :
+            raise
+            print(e)   
 
-    async def getDetailPost(self):
+    async def getDetailPost(self , page : Page):
         try:
             item_selector = ".item_detail"
-            await self.page.wait_for_selector(item_selector)
-            all_elements = self.page.locator(item_selector)
+            await page.wait_for_selector(item_selector)
+            all_elements = page.locator(item_selector)
 
             # Filtrer ceux qui contiennent l'image spécifique
             mission_elements = all_elements.filter(
-                has=self.page.locator("p > img[src='https://www.portaljob-madagascar.com/application/resources/images/view/mission.jpg']")
+                has=page.locator("p > img[src='https://www.portaljob-madagascar.com/application/resources/images/view/mission.jpg']")
             )
 
             detail_element = mission_elements.nth(0)
@@ -405,7 +422,7 @@ class Navigater:
             return None
 
     def setup(self):
-        self.path = r"C:\Users\Hasina_IA\Documents\andy\andy\document.json"
+        self.path = r"C:\Users\asus\simply_post\document.json"
         self.vector_database = r"C:\Users\Hasina_IA\Documents\andy\andy\faiss_index"
         self.classification = Database2(self.path, prompt_type="classification")
         self.generation = Database2(self.path, prompt_type="generation")
@@ -431,46 +448,60 @@ class Navigater:
         print(self.retour)
         return self.retour
 
-    async def post(self):
+    async def post(self , page : Page):
         try:
             selector_element = "a[id='a2']"
-            selector = self.page.locator(selector_element)
+            selector = page.locator(selector_element)
             await selector.nth(0).click()
-            await self.page.wait_for_load_state('networkidle')
-            await self.login()
+            await page.wait_for_load_state('networkidle')
+            await self.login(page=page)
         except Exception as e:
             print(e)
 
-    async def login(self):
+    async def login(self  , page : Page):
         try:
+            await page.wait_for_load_state("networkidle")
+            try : 
+                await page.wait_for_selector(".create_compte")
+                print("  login")
+            except Exception :
+                print(" not login")
+                return
             selectorusername = "input[id='log_username']"
             selectorpwd = "input[id='log_password']"
             submit = "a[id='link-log']"
 
-            user_element = self.page.locator(selectorusername)
-            pwd_element = self.page.locator(selectorpwd)
-            submit_element = self.page.locator(submit)
+            user_element = page.locator(selectorusername)
+            pwd_element = page.locator(selectorpwd)
+            submit_element = page.locator(submit)
 
+            if not user_element or not pwd_element or not submit_element : 
+                raise Exception(" input to add login requise value is missing")
             print(self.username)
             print(self.psw)
 
-            await user_element.fill(self.username)
-            await pwd_element.fill(self.psw)
+            await user_element.nth(0).fill(self.username)
+            await pwd_element.nth(0).fill(self.psw)
 
             await submit_element.click()
-            await self.page.wait_for_load_state('networkidle')
+            await page.wait_for_load_state('networkidle')
         except Exception as e:
             print(e)
 
-    async def fill_lm(self):
+    async def fill_lm(self  , page : Page):
         try:
-            data = self.retour
+            #data = self.retour 
+            data = "test"
             selector = "textarea[id='lm']"
-            selector_element = self.page.locator(selector=selector)
+            selector_element = page.locator(selector=selector)
+            if selector_element : 
+                print("founded")
+            else :
+                raise Exception("Zone de de texte introuvable")
             await selector_element.nth(0).fill(data)
 
             selector_bouton = "a[id='link-valid']"
-            selector_bouton = self.page.locator(selector_bouton)
+            selector_bouton = page.locator(selector_bouton)
             # await selector_bouton.nth(0).click()
         except Exception as e:
             print(e)

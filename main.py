@@ -11,7 +11,7 @@ dotenv.load_dotenv(dotenv_path=os.path.join(parent_dir, ".env"))
 
 
 asyncio.run(Navigater(
-    username= os.getenv("USERNAME"),
+    username= os.getenv("EMAIL"),
     psw= os.getenv("PASSWORD")
     
     
